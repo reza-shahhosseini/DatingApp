@@ -4,6 +4,7 @@ import {map} from 'rxjs/operators';
 import { User } from '../_models/user';
 import {ReplaySubject} from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { tokenReference } from '@angular/compiler';
 
 @Injectable({providedIn:'root'})
 export class AccountService {
@@ -24,8 +25,15 @@ export class AccountService {
   }
 
   setCurrentUser(user:User){
+    user.roles=[];
+    const roles = this.getDecodedToken(user.token).role;
+    Array.isArray(roles)?user.roles=roles:user.roles.push(roles);
     localStorage.setItem('user',JSON.stringify(user));
     this.currentUserSource.next(user);
+  }
+
+  getDecodedToken(token:string){
+    return JSON.parse(atob(token.split('.')[1]))
   }
 
   logout(){
